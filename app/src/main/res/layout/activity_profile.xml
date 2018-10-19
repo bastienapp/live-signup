@@ -81,7 +81,7 @@
         app:layout_constraintTop_toTopOf="@+id/iv_photo" />
 
     <Button
-        android:id="@+id/button_galery"
+        android:id="@+id/button_gallery"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="32dp"

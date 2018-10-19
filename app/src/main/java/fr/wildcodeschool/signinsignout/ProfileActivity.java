@@ -31,8 +31,8 @@ public class ProfileActivity extends AppCompatActivity {
         final DatabaseReference userRef = database.getReference("user");
         final String userId = mAuth.getUid();
 
-        Button btGalery = findViewById(R.id.button_galery);
-        btGalery.setOnClickListener(new View.OnClickListener() {
+        Button btGallery = findViewById(R.id.button_gallery);
+        btGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // TODO
