@@ -8,4 +8,7 @@
     <string name="nom">Nom</string>
     <string name="age">Âge</string>
     <string name="se_d_connecter">Se déconnecter</string>
+    <string name="appareil_photo">Appareil photo</string>
+    <string name="galerie">Galerie</string>
+    <string name="error_fields">Please fill all fields.</string>
 </resources>

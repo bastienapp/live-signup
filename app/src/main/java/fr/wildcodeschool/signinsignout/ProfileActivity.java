@@ -38,8 +38,10 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 UserModel user = dataSnapshot.getValue(UserModel.class);
-                etName.setText(user.getName());
-                etAge.setText(String.valueOf(user.getAge()));
+                if (user != null) {
+                    etName.setText(user.getName());
+                    etAge.setText(String.valueOf(user.getAge()));
+                }
             }
 
             @Override

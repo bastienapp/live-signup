@@ -47,7 +47,11 @@ public class SignUpActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String email = etEmail.getText().toString();
                 String password = etPassword.getText().toString();
-                signUp(email, password);
+                if (!email.isEmpty() && !password.isEmpty()) {
+                    signUp(email, password);
+                } else {
+                    Toast.makeText(SignUpActivity.this, R.string.error_fields, Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
