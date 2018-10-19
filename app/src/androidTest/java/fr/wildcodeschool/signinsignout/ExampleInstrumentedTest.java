@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("fr.wildcodeschool.galaxianscores", appContext.getPackageName());
+        assertEquals("fr.wildcodeschool.signinsignout", appContext.getPackageName());
     }
 }

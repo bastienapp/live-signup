@@ -11,4 +11,5 @@
     <string name="appareil_photo">Appareil photo</string>
     <string name="galerie">Galerie</string>
     <string name="error_fields">Please fill all fields.</string>
+    <string name="select_photo">Sélectionner une photo</string>
 </resources>

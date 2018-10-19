@@ -197,6 +197,50 @@
           "status": 2
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:186158117004:android:8af8fc2cce12696e",
+        "android_client_info": {
+          "package_name": "fr.wildcodeschool.signinsignout"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "186158117004-6kefatn5lnn5j0r6lnm72jo1vj6le19i.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fr.wildcodeschool.signinsignout",
+            "certificate_hash": "39b628db43a28908ea27523f960cb30720a85b93"
+          }
+        },
+        {
+          "client_id": "186158117004-chvfeqm6vbrldem6vndhuvhuj94rhqog.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAq6IauHi7hozZy3_qy9ZBT8e40crIGg78"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "186158117004-chvfeqm6vbrldem6vndhuvhuj94rhqog.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
     }
   ],
   "configuration_version": "1"
