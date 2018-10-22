@@ -75,37 +75,28 @@ public class ProfileActivity extends AppCompatActivity {
         final EditText etAge = findViewById(R.id.et_age);
         final ImageView ivPhoto = findViewById(R.id.iv_photo);
 
+        // load user infos
+        final UserSingleton singleton = UserSingleton.getInstance();
+        mUser = singleton.getUser();
+        if (mUser != null) {
+            etName.setText(mUser.getName());
+            etAge.setText(String.valueOf(mUser.getAge()));
+            String photo = mUser.getPhoto();
+            if (photo != null && !photo.isEmpty()) {
+                Glide.with(ProfileActivity.this).load(photo).into(ivPhoto);
+            }
+        }
+
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference userRef = database.getReference("user");
         final String userId = mAuth.getUid();
-        if (userId != null) {
-            userRef.child(userId).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    UserModel user = dataSnapshot.getValue(UserModel.class);
-                    if (user != null) {
-                        mUser = user;
-                        etName.setText(user.getName());
-                        etAge.setText(String.valueOf(user.getAge()));
-                        String photo = mUser.getPhoto();
-                        if (photo != null && !photo.isEmpty()) {
-                            Glide.with(ProfileActivity.this).load(photo).into(ivPhoto);
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-        }
 
         Button disconnect = findViewById(R.id.button_disconnect);
         disconnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mAuth.signOut();
+                singleton.clear();
                 startActivity(new Intent(ProfileActivity.this, SignUpActivity.class));
                 finish();
             }

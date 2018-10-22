@@ -19,19 +19,13 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="fr.wildcodeschool.signinsignout.SignUpActivity"
-            android:windowSoftInputMode="stateHidden">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name="fr.wildcodeschool.signinsignout.SignInActivity"
+            android:name=".SignUpActivity"
             android:windowSoftInputMode="stateHidden" />
         <activity
-            android:name="fr.wildcodeschool.signinsignout.ProfileActivity"
+            android:name=".SignInActivity"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".ProfileActivity"
             android:windowSoftInputMode="stateHidden" />
 
         <provider
@@ -43,6 +37,15 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <activity android:name=".SplashActivity"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

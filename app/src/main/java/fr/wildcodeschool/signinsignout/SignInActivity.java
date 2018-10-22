@@ -17,6 +17,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import fr.wildcodeschool.signinsignout.listener.LoadUserListener;
+
 public class SignInActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
@@ -64,8 +66,20 @@ public class SignInActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("SIGNUP_DEBUG", "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
+                            final FirebaseUser user = mAuth.getCurrentUser();
+
+                            final UserSingleton singleton = UserSingleton.getInstance();
+                            singleton.loadUser(user.getUid(), new LoadUserListener() {
+                                @Override
+                                public void onSuccess() {
+                                    updateUI(user);
+                                }
+
+                                @Override
+                                public void onFailure() {
+                                    // TODO afficher un message d'erreur ici
+                                }
+                            });
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("SIGNUP_DEBUG", "createUserWithEmail:failure", task.getException());
