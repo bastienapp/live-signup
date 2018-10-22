@@ -4,13 +4,17 @@ public class UserModel {
 
     private String name;
     private int age;
-
-    public UserModel(String name, int age) {
-        this.name = name;
-        this.age = age;
-    }
+    private String photo;
 
     public UserModel() {
+    }
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
     }
 
     public String getName() {
