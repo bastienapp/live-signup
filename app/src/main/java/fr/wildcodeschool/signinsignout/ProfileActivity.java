@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -15,19 +14,10 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,14 +26,13 @@ import java.util.Date;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private static final int REQUEST_PICK_IMAGE = 1422;
-    private static final int REQUEST_TAKE_PHOTO = 4152;
-    String mCurrentPhotoPath;
+    private static final int REQUEST_GET_SINGLE_FILE = 412;
+    private static final int REQUEST_TAKE_PHOTO = 1984;
+    private static final String TYPE_IMAGE = "image/*";
     private FirebaseAuth mAuth;
-    private StorageReference mStorageRef;
-    private Uri mPhoto = null;
     private UserModel mUser = null;
     private Uri mDownloadUri = null;
+    private String mCurrentPhotoPath = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +48,8 @@ public class ProfileActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("image/*");
-                startActivityForResult(Intent.createChooser(intent, getString(R.string.select_photo)), REQUEST_PICK_IMAGE);
+                intent.setType(TYPE_IMAGE);
+                startActivityForResult(Intent.createChooser(intent, getString(R.string.select_photo)), REQUEST_GET_SINGLE_FILE);
             }
         });
         Button btCamera = findViewById(R.id.button_camera);
@@ -127,6 +116,37 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            finish();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            Uri uri = null;
+            if (requestCode == REQUEST_GET_SINGLE_FILE) {
+                uri = data.getData();
+            }
+            if (requestCode == REQUEST_TAKE_PHOTO) {
+                File file = new File(mCurrentPhotoPath);
+                uri = Uri.fromFile(file);
+            }
+            if (uri != null) {
+                ImageView ivPhoto = findViewById(R.id.iv_photo);
+                Glide.with(ProfileActivity.this).load(uri)
+                        .into(ivPhoto);
+            }
+        }
+    }
+
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -153,6 +173,7 @@ public class ProfileActivity extends AppCompatActivity {
                 photoFile = createImageFile();
             } catch (IOException ex) {
                 // Error occurred while creating the File
+                // TODO : gérer les cas d'erreurs
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
@@ -163,68 +184,5 @@ public class ProfileActivity extends AppCompatActivity {
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK) {
-            if (requestCode == REQUEST_PICK_IMAGE) {
-                if (data != null && data.getData() != null) {
-                    mPhoto = data.getData();
-                }
-            }
-            if (requestCode == REQUEST_TAKE_PHOTO) {
-                if (mCurrentPhotoPath != null) {
-                    File file = new File(mCurrentPhotoPath);
-                    mPhoto = Uri.fromFile(file);
-                }
-            }
-        }
-        if (mPhoto != null) {
-            ImageView ivPhoto = findViewById(R.id.iv_photo);
-            Glide.with(ProfileActivity.this).load(mPhoto).into(ivPhoto);
-            uploadPhoto(mPhoto);
-        }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) {
-            finish();
-        }
-    }
-
-    private void uploadPhoto(Uri uri) {
-        // Create a storage reference from our app
-        mStorageRef = FirebaseStorage.getInstance().getReference();
-        final StorageReference ref = mStorageRef.child("images/" + mAuth.getUid());
-        UploadTask uploadTask = ref.putFile(uri);
-
-        uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
-            @Override
-            public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
-                if (!task.isSuccessful()) {
-                    throw task.getException();
-                }
-
-                // Continue with the task to get the download URL
-                return ref.getDownloadUrl();
-            }
-        }).addOnCompleteListener(new OnCompleteListener<Uri>() {
-            @Override
-            public void onComplete(@NonNull Task<Uri> task) {
-                if (task.isSuccessful()) {
-                    mDownloadUri = task.getResult();
-                } else {
-                    // Handle failures
-                    // ...
-                }
-            }
-        });
     }
 }
