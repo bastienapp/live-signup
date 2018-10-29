@@ -65,7 +65,19 @@ public class SignInActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("SIGNUP_DEBUG", "createUserWithEmail:success");
                             final FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
+                            Singleton.getInstance().loadUser(user.getUid(),
+                                    new UserListener() {
+                                        @Override
+                                        public void onSuccess(UserModel userModel) {
+                                            updateUI(user);
+                                        }
+
+                                        @Override
+                                        public void onFailure(String error) {
+                                            Toast.makeText(SignInActivity.this, error, Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                            // TODO when infos loaded, go to profile
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("SIGNUP_DEBUG", "createUserWithEmail:failure", task.getException());

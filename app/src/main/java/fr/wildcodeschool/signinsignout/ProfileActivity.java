@@ -67,27 +67,14 @@ public class ProfileActivity extends AppCompatActivity {
         final EditText etAge = findViewById(R.id.et_age);
         final ImageView ivPhoto = findViewById(R.id.iv_photo);
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference userRef = database.getReference("user");
-        final String userId = mAuth.getUid();
-        if (userId != null) {
-            userRef.child(userId).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    mUser = dataSnapshot.getValue(UserModel.class);
-                    etName.setText(mUser.getName());
-                    etAge.setText(String.valueOf(mUser.getAge()));
-                    String photo = mUser.getPhoto();
-                    if (photo != null && !photo.isEmpty()) {
-                        Glide.with(ProfileActivity.this).load(photo).into(ivPhoto);
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-                    // TODO afficher un message d'erreur ici
-                }
-            });
+        mUser = Singleton.getInstance().getUser();
+        if (mUser != null) {
+            etName.setText(mUser.getName());
+            etAge.setText(String.valueOf(mUser.getAge()));
+            String photo = mUser.getPhoto();
+            if (photo != null && !photo.isEmpty()) {
+                Glide.with(ProfileActivity.this).load(photo).into(ivPhoto);
+            }
         }
 
         Button disconnect = findViewById(R.id.button_disconnect);
@@ -95,6 +82,7 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 mAuth.signOut();
+                Singleton.getInstance().setUser(null);
                 startActivity(new Intent(ProfileActivity.this, SignUpActivity.class));
                 finish();
             }
@@ -120,7 +108,9 @@ public class ProfileActivity extends AppCompatActivity {
                 if (mDownloadUri != null) {
                     mUser.setPhoto(mDownloadUri.toString());
                 }
-                userRef.child(userId).setValue(mUser);
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                final DatabaseReference userRef = database.getReference("user");
+                userRef.child(mAuth.getUid()).setValue(mUser);
             }
         });
     }
