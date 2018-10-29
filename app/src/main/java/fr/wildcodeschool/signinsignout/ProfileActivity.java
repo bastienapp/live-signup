@@ -151,6 +151,7 @@ public class ProfileActivity extends AppCompatActivity {
                 ImageView ivPhoto = findViewById(R.id.iv_photo);
                 Glide.with(ProfileActivity.this).load(mDownloadUri)
                         .into(ivPhoto);
+                // TODO : upload on FirebaseStorage
             }
         }
     }
