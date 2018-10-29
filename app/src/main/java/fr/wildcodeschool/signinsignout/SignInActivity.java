@@ -1,9 +1,9 @@
 package fr.wildcodeschool.signinsignout;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,8 +16,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
-import fr.wildcodeschool.signinsignout.listener.LoadUserListener;
 
 public class SignInActivity extends AppCompatActivity {
 
@@ -67,19 +65,7 @@ public class SignInActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d("SIGNUP_DEBUG", "createUserWithEmail:success");
                             final FirebaseUser user = mAuth.getCurrentUser();
-
-                            final UserSingleton singleton = UserSingleton.getInstance();
-                            singleton.loadUser(user.getUid(), new LoadUserListener() {
-                                @Override
-                                public void onSuccess() {
-                                    updateUI(user);
-                                }
-
-                                @Override
-                                public void onFailure() {
-                                    // TODO afficher un message d'erreur ici
-                                }
-                            });
+                            updateUI(user);
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w("SIGNUP_DEBUG", "createUserWithEmail:failure", task.getException());

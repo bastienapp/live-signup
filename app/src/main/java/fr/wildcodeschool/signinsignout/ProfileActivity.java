@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -16,8 +17,11 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +36,6 @@ public class ProfileActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private UserModel mUser = null;
     private Uri mDownloadUri = null;
-    private String mCurrentPhotoPath = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,28 +67,34 @@ public class ProfileActivity extends AppCompatActivity {
         final EditText etAge = findViewById(R.id.et_age);
         final ImageView ivPhoto = findViewById(R.id.iv_photo);
 
-        // load user infos
-        final UserSingleton singleton = UserSingleton.getInstance();
-        mUser = singleton.getUser();
-        if (mUser != null) {
-            etName.setText(mUser.getName());
-            etAge.setText(String.valueOf(mUser.getAge()));
-            String photo = mUser.getPhoto();
-            if (photo != null && !photo.isEmpty()) {
-                Glide.with(ProfileActivity.this).load(photo).into(ivPhoto);
-            }
-        }
-
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference userRef = database.getReference("user");
         final String userId = mAuth.getUid();
+        if (userId != null) {
+            userRef.child(userId).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    mUser = dataSnapshot.getValue(UserModel.class);
+                    etName.setText(mUser.getName());
+                    etAge.setText(String.valueOf(mUser.getAge()));
+                    String photo = mUser.getPhoto();
+                    if (photo != null && !photo.isEmpty()) {
+                        Glide.with(ProfileActivity.this).load(photo).into(ivPhoto);
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    // TODO afficher un message d'erreur ici
+                }
+            });
+        }
 
         Button disconnect = findViewById(R.id.button_disconnect);
         disconnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mAuth.signOut();
-                singleton.clear();
                 startActivity(new Intent(ProfileActivity.this, SignUpActivity.class));
                 finish();
             }
@@ -131,17 +140,16 @@ public class ProfileActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-            Uri uri = null;
             if (requestCode == REQUEST_GET_SINGLE_FILE) {
-                uri = data.getData();
+                mDownloadUri = data.getData();
             }
             if (requestCode == REQUEST_TAKE_PHOTO) {
-                File file = new File(mCurrentPhotoPath);
-                uri = Uri.fromFile(file);
+                //
             }
-            if (uri != null) {
+            if (mDownloadUri != null) {
+                Toast.makeText(this, mDownloadUri.toString(), Toast.LENGTH_SHORT).show();
                 ImageView ivPhoto = findViewById(R.id.iv_photo);
-                Glide.with(ProfileActivity.this).load(uri)
+                Glide.with(ProfileActivity.this).load(mDownloadUri)
                         .into(ivPhoto);
             }
         }
@@ -157,9 +165,6 @@ public class ProfileActivity extends AppCompatActivity {
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
-
-        // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
         return image;
     }
 
@@ -177,10 +182,10 @@ public class ProfileActivity extends AppCompatActivity {
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this,
+                mDownloadUri = FileProvider.getUriForFile(this,
                         "fr.wildcodeschool.signinsignout.fileprovider",
                         photoFile);
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mDownloadUri);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
         }
