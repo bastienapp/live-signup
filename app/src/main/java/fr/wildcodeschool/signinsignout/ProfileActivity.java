@@ -15,13 +15,15 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,8 @@ public class ProfileActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private UserModel mUser = null;
     private Uri mDownloadUri = null;
+    private String mPhotoUrl = null;
+    private StorageReference mStorageRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
+        mStorageRef = FirebaseStorage.getInstance().getReference();
 
         Button btGallery = findViewById(R.id.button_gallery);
         btGallery.setOnClickListener(new View.OnClickListener() {
@@ -105,8 +110,8 @@ public class ProfileActivity extends AppCompatActivity {
                 }
                 mUser.setAge(age);
                 mUser.setName(name);
-                if (mDownloadUri != null) {
-                    mUser.setPhoto(mDownloadUri.toString());
+                if (mPhotoUrl != null) {
+                    mUser.setPhoto(mPhotoUrl);
                 }
                 FirebaseDatabase database = FirebaseDatabase.getInstance();
                 final DatabaseReference userRef = database.getReference("user");
@@ -134,14 +139,43 @@ public class ProfileActivity extends AppCompatActivity {
                 mDownloadUri = data.getData();
             }
             if (requestCode == REQUEST_TAKE_PHOTO) {
-                //
+                // NOTHING
             }
             if (mDownloadUri != null) {
-                Toast.makeText(this, mDownloadUri.toString(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, mDownloadUri.toString(), Toast.LENGTH_SHORT).show();
                 ImageView ivPhoto = findViewById(R.id.iv_photo);
                 Glide.with(ProfileActivity.this).load(mDownloadUri)
                         .into(ivPhoto);
                 // TODO : upload on FirebaseStorage
+                final StorageReference riversRef = mStorageRef.child("images/" + mDownloadUri.getPath());
+
+                riversRef.putFile(mDownloadUri)
+                        .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                // Get a URL to the uploaded content
+                                riversRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        Uri downloadUrl = uri;
+                                        Toast.makeText(ProfileActivity.this, R.string.photo_loaded, Toast.LENGTH_SHORT).show();
+                                        UserModel userModel = Singleton.getInstance().getUser();
+                                        userModel.setPhoto(downloadUrl.toString());
+                                        Singleton.getInstance().setUser(userModel);
+                                        // TODO : enregistrer la photo dans Firebase database
+                                        mPhotoUrl = downloadUrl.toString();
+                                    }
+                                });
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                // Handle unsuccessful uploads
+                                // ...
+                            }
+                        });
+
             }
         }
     }
